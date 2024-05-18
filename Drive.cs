@@ -12,6 +12,7 @@ namespace WindowsFormsApp1
         private string boot = "N/A", sec = "N/A";
         public Drive()
         {
+            GetDriveInfo();
         }
         /// <summary>
         /// Formats bytes value into highest value up to PB.
@@ -72,49 +73,39 @@ namespace WindowsFormsApp1
         /// <returns>Returns rounded value</returns>
         public string ConvertToClosest(double size, string prefix)
         {
-            string converted;
-            double psize = 1;
-            bool found = false;
-            while (!found)
-            {
-                if (psize < 8)
-                {
-                    if (psize / size >= 0.9 && psize / size <= 1.1)
-                    {
-                        found = true;
-                    }
-                    else
-                    {
-                        psize++;
-                    }
-                }
-                /*else if (psize > size) {
-                    found = true;
-                    psize=Math.Ceiling(size);
-                }*/
-                else
-                {
-                    if (psize / size >= 0.9 && psize / size <= 1.1)
-                    {
-                        found = true;
-                    }
-                    else
-                    {
-                        psize *= 2;
-                    }
-                }
+            // Define the list of predefined sizes in GB
+            double[] predefinedSizes = { 128, 256, 512, 1024, 2048, 4096, 8192 }; // Added up to 8 TB (8192 GB)
 
+            // Convert TB to GB if necessary
+            if (prefix.ToLower() == "tb")
+            {
+                size *= 1024; // Convert TB to GB
             }
 
-            if (psize % 1024 == 0)
+            // Find the closest size using a simple comparison
+            double closestSize = predefinedSizes[0];
+            double minDifference = Math.Abs(size - closestSize);
+
+            for (int i = 1; i < predefinedSizes.Length; i++)
             {
-                double i = psize / 1024;
-                converted = i.ToString() + " TB";
+                double currentDifference = Math.Abs(size - predefinedSizes[i]);
+                if (currentDifference < minDifference)
+                {
+                    closestSize = predefinedSizes[i];
+                    minDifference = currentDifference;
+                }
             }
-            else
+
+            // Determine the appropriate prefix for the closest size
+            string outputPrefix = "GB";
+            if (closestSize >= 1024)
             {
-                converted = psize.ToString() + " " + prefix;
+                closestSize /= 1024;
+                outputPrefix = "TB";
             }
+
+            // Construct the output string
+            string converted = closestSize + " " + outputPrefix;
             return converted;
         }
         public string getBoot()
